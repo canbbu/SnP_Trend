@@ -23,6 +23,7 @@ jobs:
         env:
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
           FMP_BASE_URL: ${{ vars.FMP_BASE_URL }}
+          CONSTITUENTS_CSV_URLS: ${{ vars.CONSTITUENTS_CSV_URLS }}
           OUT_FILE: ./data.json
           CONCURRENCY: 8
         run: node ./scripts/update-data.js

@@ -5,3 +5,5 @@ node .\scripts\update-data.js
 curl "https://financialmodelingprep.com/api/v3/sp500_constituent?apikey=txG3M5yOsnIUf5E300RdsjLs3KKTunXQ"
 
 curl.exe "https://financialmodelingprep.com/stable/sp500-constituent?apikey=sp500_constituent?apikey=txG3M5yOsnIUf5E300RdsjLs3KKTunXQ"
+
+FMP_BASE_URL=https://financialmodelingprep.com/stable/

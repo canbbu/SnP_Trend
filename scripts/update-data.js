@@ -10,6 +10,7 @@
  * Optional env:
  *   FMP_BASE_URL=https://financialmodelingprep.com/stable
  *   CONSTITUENTS_CSV_URL=https://datahub.io/core/s-and-p-500-companies/r/constituents.csv
+ *   CONSTITUENTS_CSV_URLS=comma,separated,urls (optional fallback list)
  *   OUT_FILE=./data.json
  *   CONCURRENCY=8
  */
@@ -42,7 +43,22 @@ loadDotEnvFile();
 
 const API_KEY = process.env.FMP_API_KEY;
 const BASE_URL = process.env.FMP_BASE_URL || 'https://financialmodelingprep.com/stable';
-const CONSTITUENTS_CSV_URL = process.env.CONSTITUENTS_CSV_URL || 'https://datahub.io/core/s-and-p-500-companies/r/constituents.csv';
+const DEFAULT_CONSTITUENTS_URLS = [
+  'https://datahub.io/core/s-and-p-500-companies/r/constituents.csv',
+  'https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv'
+];
+
+const CONSTITUENTS_CSV_URLS = (
+  process.env.CONSTITUENTS_CSV_URLS
+    ? process.env.CONSTITUENTS_CSV_URLS.split(',').map(s => s.trim()).filter(Boolean)
+    : [process.env.CONSTITUENTS_CSV_URL].filter(Boolean)
+).length
+  ? (
+      process.env.CONSTITUENTS_CSV_URLS
+        ? process.env.CONSTITUENTS_CSV_URLS.split(',').map(s => s.trim()).filter(Boolean)
+        : [process.env.CONSTITUENTS_CSV_URL || DEFAULT_CONSTITUENTS_URLS[0]]
+    )
+  : DEFAULT_CONSTITUENTS_URLS;
 const OUT_FILE = path.resolve(process.cwd(), process.env.OUT_FILE || 'data.json');
 const CONCURRENCY = Number(process.env.CONCURRENCY || 8);
 
@@ -67,6 +83,20 @@ async function fetchText(url) {
     throw new Error(`HTTP ${res.status} ${res.statusText} - ${url}`);
   }
   return res.text();
+}
+
+async function fetchTextWithRetry(url, maxRetries = 3) {
+  let lastErr = null;
+  for (let i = 0; i <= maxRetries; i += 1) {
+    try {
+      return await fetchText(url);
+    } catch (err) {
+      lastErr = err;
+      if (i === maxRetries) break;
+      await sleep(400 * (i + 1));
+    }
+  }
+  throw lastErr;
 }
 
 function toNumber(v, fallback = 0) {
@@ -139,7 +169,18 @@ function parseCsv(text) {
 }
 
 async function loadConstituents() {
-  const csvText = await fetchText(CONSTITUENTS_CSV_URL);
+  let csvText = null;
+  let lastErr = null;
+  for (const url of (CONSTITUENTS_CSV_URLS.length ? CONSTITUENTS_CSV_URLS : DEFAULT_CONSTITUENTS_URLS)) {
+    try {
+      csvText = await fetchTextWithRetry(url, 2);
+      break;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  if (!csvText) throw lastErr || new Error('Failed to download constituents CSV.');
+
   const rows = parseCsv(csvText);
   if (!rows.length) {
     throw new Error('No constituents returned from DataHub CSV.');
