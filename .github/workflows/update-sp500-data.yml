@@ -1,0 +1,43 @@
+name: Update SP500 Data
+
+on:
+  schedule:
+    # UTC 기준 평일 22:00 실행 (한국시간 다음날 07:00)
+    - cron: "0 22 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  update-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Generate latest data.json
+        env:
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+          FMP_BASE_URL: ${{ vars.FMP_BASE_URL }}
+          OUT_FILE: ./data.json
+          CONCURRENCY: 8
+        run: node ./scripts/update-data.js
+
+      - name: Upload to Supabase Storage (upsert)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_BUCKET: ${{ vars.SUPABASE_BUCKET }}
+          SUPABASE_OBJECT_PATH: ${{ vars.SUPABASE_OBJECT_PATH }}
+        run: |
+          curl -X POST \
+            "${SUPABASE_URL}/storage/v1/object/${SUPABASE_BUCKET}/${SUPABASE_OBJECT_PATH}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "x-upsert: true" \
+            --data-binary "@data.json"

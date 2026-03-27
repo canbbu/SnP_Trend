@@ -448,7 +448,8 @@ html, body {
   // ——— Load data ———
   // Supports both legacy array format and envelope format:
   // { as_of, data_source, data: [...] }
-  const rawPayload = await d3.json('https://nnieuiiisxecakiecjyp.supabase.co/storage/v1/object/public/s&p500/latest/data.json ');
+  const DATA_URL = 'https://nnieuiiisxecakiecjyp.supabase.co/storage/v1/object/public/s%26p500/latest/data.json';
+  const rawPayload = await d3.json(`${DATA_URL}?t=${Date.now()}`);
   const data = Array.isArray(rawPayload) ? rawPayload : (rawPayload?.data || []);
   const asOfRaw = Array.isArray(rawPayload) ? null : rawPayload?.as_of;
   const asOfDate = asOfRaw ? new Date(asOfRaw) : null;

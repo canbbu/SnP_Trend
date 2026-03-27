@@ -2,13 +2,14 @@
 'use strict';
 
 /**
- * Update S&P 500 chart dataset using Financial Modeling Prep.
+ * Update S&P 500 chart dataset using DataHub constituents + FMP stable APIs.
  *
  * Required env:
  *   FMP_API_KEY=...
  *
  * Optional env:
- *   FMP_BASE_URL=https://financialmodelingprep.com/api/v3
+ *   FMP_BASE_URL=https://financialmodelingprep.com/stable
+ *   CONSTITUENTS_CSV_URL=https://datahub.io/core/s-and-p-500-companies/r/constituents.csv
  *   OUT_FILE=./data.json
  *   CONCURRENCY=8
  */
@@ -16,8 +17,32 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 
+function loadDotEnvFile() {
+  // Minimal .env loader (no dependency) so `node scripts/update-data.js` works locally.
+  // Format: KEY=VALUE, ignores blank lines and comments (# ...).
+  const dotenvPath = path.resolve(process.cwd(), '.env');
+  try {
+    const text = require('node:fs').readFileSync(dotenvPath, 'utf8');
+    const lines = text.split(/\r?\n/);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx <= 0) continue;
+      const key = trimmed.slice(0, idx).trim();
+      const value = trimmed.slice(idx + 1).trim();
+      if (!process.env[key]) process.env[key] = value;
+    }
+  } catch (_) {
+    // ignore if no .env exists
+  }
+}
+
+loadDotEnvFile();
+
 const API_KEY = process.env.FMP_API_KEY;
-const BASE_URL = process.env.FMP_BASE_URL || 'https://financialmodelingprep.com/api/v3';
+const BASE_URL = process.env.FMP_BASE_URL || 'https://financialmodelingprep.com/stable';
+const CONSTITUENTS_CSV_URL = process.env.CONSTITUENTS_CSV_URL || 'https://datahub.io/core/s-and-p-500-companies/r/constituents.csv';
 const OUT_FILE = path.resolve(process.cwd(), process.env.OUT_FILE || 'data.json');
 const CONCURRENCY = Number(process.env.CONCURRENCY || 8);
 
@@ -36,21 +61,21 @@ async function fetchJson(url) {
   return res.json();
 }
 
+async function fetchText(url) {
+  const res = await fetch(url, { headers: { Accept: 'text/csv,text/plain,*/*' } });
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} ${res.statusText} - ${url}`);
+  }
+  return res.text();
+}
+
 function toNumber(v, fallback = 0) {
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
 }
 
 function normalizeSymbol(symbol) {
-  return String(symbol || '').trim().toUpperCase();
-}
-
-function buildChunk(items, size) {
-  const chunks = [];
-  for (let i = 0; i < items.length; i += size) {
-    chunks.push(items.slice(i, i + size));
-  }
-  return chunks;
+  return String(symbol || '').trim().toUpperCase().replace('.', '-');
 }
 
 async function mapConcurrent(items, worker, concurrency) {
@@ -66,55 +91,92 @@ async function mapConcurrent(items, worker, concurrency) {
   return out;
 }
 
-async function loadConstituents() {
-  const url = `${BASE_URL}/sp500_constituent?apikey=${encodeURIComponent(API_KEY)}`;
-  const rows = await fetchJson(url);
-  if (!Array.isArray(rows) || rows.length === 0) {
-    throw new Error('No constituents returned from provider.');
+function parseCsvLine(line) {
+  const out = [];
+  let cur = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '"') {
+      // CSV escape for quotes: "" within quoted field
+      if (inQuotes && line[i + 1] === '"') {
+        cur += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      out.push(cur);
+      cur = '';
+    } else {
+      cur += ch;
+    }
   }
 
-  // Keep first seen ticker to avoid duplicates in provider payload.
+  out.push(cur);
+  return out;
+}
+
+function parseCsv(text) {
+  const lines = text.split(/\r?\n/).filter(Boolean);
+  if (!lines.length) return [];
+
+  const headers = parseCsvLine(lines[0]).map(h => h.trim());
+  const out = [];
+
+  for (let i = 1; i < lines.length; i += 1) {
+    const cols = parseCsvLine(lines[i]);
+    const row = {};
+    for (let j = 0; j < headers.length; j += 1) {
+      row[headers[j]] = (cols[j] || '').trim();
+    }
+    // Expect at least Symbol/ Security
+    if (row.Symbol || row.symbol) out.push(row);
+  }
+
+  return out;
+}
+
+async function loadConstituents() {
+  const csvText = await fetchText(CONSTITUENTS_CSV_URL);
+  const rows = parseCsv(csvText);
+  if (!rows.length) {
+    throw new Error('No constituents returned from DataHub CSV.');
+  }
+
+  // Keep first seen ticker to avoid duplicates.
   const seen = new Set();
   const list = [];
   for (const row of rows) {
-    const symbol = normalizeSymbol(row.symbol);
+    const symbol = normalizeSymbol(row.Symbol || row.symbol);
     if (!symbol || seen.has(symbol)) continue;
     seen.add(symbol);
     list.push({
       symbol,
-      name: row.name || symbol,
-      sector: row.sector || 'Unknown'
+      name: row.Security || row.name || symbol,
+      sector: row['GICS Sector'] || row.sector || 'Unknown'
     });
   }
   return list;
 }
 
-async function loadQuotes(symbols) {
-  const quoteMap = new Map();
-  const symbolChunks = buildChunk(symbols, 100);
-
-  for (const chunk of symbolChunks) {
-    const joined = chunk.join(',');
-    const url = `${BASE_URL}/quote/${joined}?apikey=${encodeURIComponent(API_KEY)}`;
-    const rows = await fetchJson(url);
-    if (Array.isArray(rows)) {
-      for (const row of rows) {
-        quoteMap.set(normalizeSymbol(row.symbol), {
-          price: toNumber(row.price),
-          market_cap_b: toNumber(row.marketCap) / 1e9,
-          price_change_pct: toNumber(row.changesPercentage)
-        });
-      }
-    }
-    // Small delay to reduce chance of rate-limit bursts.
-    await sleep(120);
+async function loadQuote(symbol) {
+  const url = `${BASE_URL}/quote?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(API_KEY)}`;
+  const rows = await fetchJson(url);
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return { price: 0, market_cap_b: 0, price_change_pct: 0 };
   }
-
-  return quoteMap;
+  const row = rows[0];
+  return {
+    price: toNumber(row.price),
+    market_cap_b: toNumber(row.marketCap) / 1e9,
+    price_change_pct: toNumber(row.changePercentage, toNumber(row.changesPercentage))
+  };
 }
 
 async function loadIncomeTTM(symbol) {
-  const url = `${BASE_URL}/income-statement/${symbol}?period=quarter&limit=4&apikey=${encodeURIComponent(API_KEY)}`;
+  const url = `${BASE_URL}/income-statement?symbol=${encodeURIComponent(symbol)}&period=quarter&limit=4&apikey=${encodeURIComponent(API_KEY)}`;
   const rows = await fetchJson(url);
   if (!Array.isArray(rows) || rows.length === 0) {
     return { ttm_revenue_b: 0, ttm_net_income_b: 0 };
@@ -156,49 +218,61 @@ async function main() {
   const symbols = constituents.map(c => c.symbol);
   console.log(`Constituents: ${symbols.length}`);
 
-  console.log('Loading quotes (price, market cap, 12m change)...');
-  const quoteMap = await loadQuotes(symbols);
-  console.log(`Quotes loaded: ${quoteMap.size}`);
-
-  console.log('Loading TTM income statement data...');
-  const incomeRows = await mapConcurrent(
-    constituents,
-    async ({ symbol }, i) => {
-      if ((i + 1) % 50 === 0) {
-        console.log(`  income progress: ${i + 1}/${constituents.length}`);
-      }
-      try {
-        return { symbol, ...(await loadIncomeTTM(symbol)) };
-      } catch (_) {
-        return { symbol, ttm_revenue_b: 0, ttm_net_income_b: 0 };
-      }
-    },
-    CONCURRENCY
-  );
-  const incomeMap = new Map(incomeRows.map(r => [r.symbol, r]));
-
   const merged = constituents.map(c => {
-    const q = quoteMap.get(c.symbol) || {};
-    const fin = incomeMap.get(c.symbol) || {};
-    const ttmRevenue = toNumber(fin.ttm_revenue_b);
-    const ttmIncome = toNumber(fin.ttm_net_income_b);
-    const profitMargin = ttmRevenue > 0 ? (ttmIncome / ttmRevenue) * 100 : 0;
-
     return {
       symbol: c.symbol,
       name: c.name,
       sector: c.sector,
-      ttm_revenue_b: ttmRevenue,
-      ttm_net_income_b: ttmIncome,
-      market_cap_b: toNumber(q.market_cap_b),
-      price_change_pct: toNumber(q.price_change_pct),
-      price: toNumber(q.price),
-      profit_margin: profitMargin
+      ttm_revenue_b: 0,
+      ttm_net_income_b: 0,
+      market_cap_b: 0,
+      price_change_pct: 0,
+      price: 0,
+      profit_margin: 0
     };
   });
 
+  console.log('Loading quote + TTM fields from FMP stable...');
+  const enriched = await mapConcurrent(
+    merged,
+    async (row, i) => {
+      if ((i + 1) % 25 === 0) {
+        console.log(`  progress: ${i + 1}/${merged.length}`);
+      }
+
+      let quote = { price: 0, market_cap_b: 0, price_change_pct: 0 };
+      let fin = { ttm_revenue_b: 0, ttm_net_income_b: 0 };
+
+      try {
+        quote = await loadQuote(row.symbol);
+      } catch (_) {
+        // Keep defaults for missing quote rows.
+      }
+      await sleep(60);
+
+      try {
+        fin = await loadIncomeTTM(row.symbol);
+      } catch (_) {
+        // Keep defaults for missing filing rows.
+      }
+
+      const ttmRevenue = toNumber(fin.ttm_revenue_b);
+      const ttmIncome = toNumber(fin.ttm_net_income_b);
+      return {
+        ...row,
+        ttm_revenue_b: ttmRevenue,
+        ttm_net_income_b: ttmIncome,
+        market_cap_b: toNumber(quote.market_cap_b),
+        price_change_pct: toNumber(quote.price_change_pct),
+        price: toNumber(quote.price),
+        profit_margin: ttmRevenue > 0 ? (ttmIncome / ttmRevenue) * 100 : 0
+      };
+    },
+    CONCURRENCY
+  );
+
   // Keep rows that can render properly and sort by ticker.
-  const cleaned = merged
+  const cleaned = enriched
     .filter(r => r.symbol && Number.isFinite(r.market_cap_b))
     .sort((a, b) => a.symbol.localeCompare(b.symbol));
 
@@ -210,7 +284,7 @@ async function main() {
   const payload = {
     as_of: new Date().toISOString().slice(0, 10),
     generated_at: new Date().toISOString(),
-    data_source: 'Financial Modeling Prep API v3',
+    data_source: 'Constituents: DataHub CSV, Metrics: Financial Modeling Prep stable API',
     record_count: cleaned.length,
     data: cleaned
   };
