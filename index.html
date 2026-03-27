@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+
+<!-- Perplexity Computer Attribution — SEO Meta Tags -->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S&P 500 Landscape — Revenue, Profitability & Market Value</title>
+<meta name="description" content="Interactive bubble chart visualizing S&P 500 companies by revenue, profitability, and market capitalization.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root {
+  --bg: #0d1117;
+  --chart-bg: #161b22;
+  --grid: #21262d;
+  --text-primary: #c9d1d9;
+  --text-secondary: #8b949e;
+  --text-faint: #484f58;
+  --border: #30363d;
+  --surface: #161b22;
+  --surface-hover: #1c2129;
+}
+html, body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Mobile message */
+.mobile-message {
+  display: none;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+}
+.mobile-message h2 { font-size: 1.25rem; font-weight: 600; }
+.mobile-message p { color: var(--text-secondary); font-size: 0.875rem; max-width: 300px; }
+@media (max-width: 860px) {
+  .mobile-message { display: flex; }
+  .app-container { display: none !important; }
+}
+
+/* Header */
+.header {
+  padding: 1.25rem 2rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.header-left h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #e6edf3;
+}
+.header-left .subtitle {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin-top: 0.15rem;
+}
+.header-left .date-tag {
+  font-size: 0.6875rem;
+  color: var(--text-faint);
+  margin-top: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* Search */
+.search-container {
+  position: relative;
+}
+.search-container svg {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px; height: 14px;
+  color: var(--text-faint);
+}
+.search-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8125rem;
+  padding: 0.4rem 0.75rem 0.4rem 2rem;
+  border-radius: 8px;
+  outline: none;
+  width: 220px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-input:focus {
+  border-color: #388bfd;
+  box-shadow: 0 0 0 2px rgba(56,139,253,0.15);
+}
+.search-input::placeholder { color: var(--text-faint); }
+
+/* Reset zoom button */
+.btn-reset {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-reset:hover { background: var(--surface-hover); color: var(--text-primary); border-color: #484f58; }
+
+/* Sector pills */
+.sector-bar {
+  padding: 0.5rem 2rem 0.5rem;
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+.sector-pill {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  padding: 0.25rem 0.7rem;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.sector-pill:hover {
+  border-color: #484f58;
+  color: var(--text-primary);
+}
+.sector-pill.active {
+  color: #fff;
+  border-color: transparent;
+}
+
+/* Chart container */
+.chart-wrapper {
+  position: relative;
+  margin: 0.5rem 2rem 0;
+  border-radius: 12px;
+  background: var(--chart-bg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.chart-wrapper svg { display: block; }
+
+/* Tooltip */
+.tooltip {
+  position: fixed;
+  pointer-events: none;
+  background: rgba(22, 27, 34, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.15s;
+  max-width: 280px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+}
+.tooltip.visible { opacity: 1; }
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.35rem;
+}
+.tooltip-name {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: #e6edf3;
+}
+.tooltip-ticker {
+  font-size: 0.6875rem;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+.tooltip-sector {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+.tooltip-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 0.75rem;
+}
+.tooltip-label { color: var(--text-secondary); }
+.tooltip-value { text-align: right; font-variant-numeric: tabular-nums lining-nums; font-weight: 500; }
+.tooltip-positive { color: #3fb950; }
+.tooltip-negative { color: #f85149; }
+
+/* Legends */
+.legend-container {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+}
+.legend-box {
+  background: rgba(13,17,23,0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
+}
+.legend-title {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-bottom: 0.4rem;
+}
+.color-gradient-bar {
+  width: 180px;
+  height: 10px;
+  border-radius: 5px;
+}
+.color-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.5625rem;
+  color: var(--text-faint);
+  margin-top: 0.2rem;
+  font-variant-numeric: tabular-nums;
+}
+.size-legend-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+.size-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.size-legend-circle {
+  border: 1px solid var(--text-faint);
+  border-radius: 50%;
+  opacity: 0.5;
+}
+.size-legend-label {
+  font-size: 0.5625rem;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Insights */
+.insights-section {
+  padding: 2.5rem 2rem 2rem;
+}
+.insights-header {
+  margin-bottom: 1.5rem;
+}
+.insights-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #e6edf3;
+}
+.insights-header p {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem;
+}
+.insight-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  border-left: 3px solid;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.insight-card:hover {
+  transform: translateY(-2px);
+}
+.insight-card h3 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #e6edf3;
+  margin-bottom: 0.4rem;
+}
+.insight-card p {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Footer */
+.footer {
+  padding: 2rem 2rem 1.5rem;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  margin-top: 1rem;
+}
+.footer a {
+  font-size: 0.6875rem;
+  color: var(--text-faint);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer a:hover { color: var(--text-secondary); }
+
+/* Bubble highlight */
+@keyframes pulse-ring {
+  0% { r: attr(r); opacity: 0.8; }
+  100% { opacity: 0; }
+}
+.bubble-highlight {
+  stroke: #fff;
+  stroke-width: 2;
+}
+</style>
+</head>
+<body>
+
+<div class="mobile-message">
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+  <h2>Best viewed on desktop</h2>
+  <p>This interactive visualization works best on screens wider than 860px. Please visit on a desktop or laptop for the full experience.</p>
+</div>
+
+<div class="app-container">
+  <header class="header">
+    <div class="header-left">
+      <h1>S&amp;P 500 Landscape</h1>
+      <div class="subtitle">Revenue, Profitability, and Market Value of America's Largest Companies</div>
+      <div class="date-tag" id="dataAsOf">Data as of —</div>
+    </div>
+    <div class="header-right">
+      <div class="search-container">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="search-input" id="search" placeholder="Search company or ticker…" autocomplete="off">
+      </div>
+      <button class="btn-reset" id="resetZoom">Reset Zoom</button>
+    </div>
+  </header>
+
+  <div class="sector-bar" id="sectorBar"></div>
+
+  <div class="chart-wrapper" id="chartWrapper">
+    <div class="legend-container">
+      <div class="legend-box">
+        <div class="legend-title">12-Month Price Change</div>
+        <canvas class="color-gradient-bar" id="colorLegend" width="180" height="10"></canvas>
+        <div class="color-labels">
+          <span>-50%</span>
+          <span>0%</span>
+          <span>+100%</span>
+        </div>
+      </div>
+      <div class="legend-box">
+        <div class="legend-title">Market Cap</div>
+        <div class="size-legend-row" id="sizeLegend"></div>
+      </div>
+    </div>
+    <div class="tooltip" id="tooltip"></div>
+  </div>
+
+  <section class="insights-section">
+    <div class="insights-header">
+      <h2>Key Insights</h2>
+      <p>12 notable patterns from the current S&amp;P 500 landscape</p>
+    </div>
+    <div class="insights-grid" id="insightsGrid"></div>
+  </section>
+
+  <footer class="footer">
+    <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Created with Perplexity Computer</a>
+  </footer>
+</div>
+
+<script>
+(async function() {
+  // ——— Configuration ———
+  const SECTOR_COLORS = {
+    'Information Technology': '#6e9eff',
+    'Health Care':            '#f778ba',
+    'Financials':             '#79c7a5',
+    'Consumer Discretionary': '#ffa657',
+    'Communication Services': '#d2a8ff',
+    'Industrials':            '#a5d6ff',
+    'Consumer Staples':       '#ffd866',
+    'Energy':                 '#ff9e82',
+    'Materials':              '#b5cea8',
+    'Utilities':              '#90d5ff',
+    'Real Estate':            '#cea5bf'
+  };
+
+  // ——— Load data ———
+  // Supports both legacy array format and envelope format:
+  // { as_of, data_source, data: [...] }
+  const rawPayload = await d3.json('https://nnieuiiisxecakiecjyp.supabase.co/storage/v1/object/public/s&p500/latest/data.json ');
+  const data = Array.isArray(rawPayload) ? rawPayload : (rawPayload?.data || []);
+  const asOfRaw = Array.isArray(rawPayload) ? null : rawPayload?.as_of;
+  const asOfDate = asOfRaw ? new Date(asOfRaw) : null;
+  const asOfLabel = asOfDate && !Number.isNaN(asOfDate.getTime())
+    ? asOfDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : 'N/A';
+  const asOfEl = document.getElementById('dataAsOf');
+  if (asOfEl) asOfEl.textContent = `Data as of ${asOfLabel}`;
+
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error('data.json does not contain chart records.');
+  }
+  const sectors = [...new Set(data.map(d => d.sector))].sort();
+
+  // ——— Setup dimensions ———
+  const wrapper = document.getElementById('chartWrapper');
+  const headerHeight = document.querySelector('.header').offsetHeight + document.querySelector('.sector-bar').offsetHeight;
+  const chartHeight = Math.max(480, Math.min(window.innerHeight - headerHeight - 60, 640));
+  const margin = { top: 24, right: 28, bottom: 52, left: 64 };
+  const width = wrapper.clientWidth;
+  const height = chartHeight;
+  const innerW = width - margin.left - margin.right;
+  const innerH = height - margin.top - margin.bottom;
+
+  // ——— Scales ———
+  // X: log scale for revenue
+  const xScale = d3.scaleLog()
+    .domain([0.7, 800])
+    .range([0, innerW]);
+
+  // Y: symmetric log for net income (handles negatives)
+  const symLogConstant = 0.5;
+  function symlog(v) {
+    return Math.sign(v) * Math.log1p(Math.abs(v / symLogConstant));
+  }
+  function symlogInv(v) {
+    return Math.sign(v) * symLogConstant * (Math.exp(Math.abs(v)) - 1);
+  }
+
+  const yExtent = d3.extent(data, d => d.ttm_net_income_b);
+  const yMin = Math.min(yExtent[0], -10);
+  const yMax = Math.max(yExtent[1], 140);
+  const yScale = d3.scaleLinear()
+    .domain([symlog(yMin), symlog(yMax)])
+    .range([innerH, 0]);
+
+  function yPos(v) { return yScale(symlog(v)); }
+
+  // Size scale
+  const rScale = d3.scaleSqrt()
+    .domain([0, d3.max(data, d => d.market_cap_b)])
+    .range([2.5, 48]);
+
+  // Color scale: red-gray-green diverging
+  // Uses D3 interpolateRgb for smooth transition
+  const colorNeg = d3.scaleLinear()
+    .domain([-50, 0])
+    .range(['#e05252', '#8b949e'])
+    .interpolate(d3.interpolateRgb.gamma(2.2))
+    .clamp(true);
+  const colorPos = d3.scaleLinear()
+    .domain([0, 100])
+    .range(['#8b949e', '#3fb950'])
+    .interpolate(d3.interpolateRgb.gamma(2.2))
+    .clamp(true);
+  function priceColor(pct) {
+    const clamped = Math.max(-50, Math.min(100, pct));
+    return clamped < 0 ? colorNeg(clamped) : colorPos(clamped);
+  }
+
+  // ——— Create SVG ———
+  const svg = d3.select('#chartWrapper')
+    .insert('svg', ':first-child')
+    .attr('width', width)
+    .attr('height', height);
+
+  // Clip path
+  svg.append('defs')
+    .append('clipPath')
+    .attr('id', 'chart-clip')
+    .append('rect')
+    .attr('width', innerW)
+    .attr('height', innerH);
+
+  const g = svg.append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // Chart bg
+  g.append('rect')
+    .attr('width', innerW)
+    .attr('height', innerH)
+    .attr('fill', 'var(--chart-bg)')
+    .attr('rx', 0);
+
+  // ——— Axes ———
+  // X axis
+  const xTickValues = [1, 2, 5, 10, 20, 50, 100, 200, 500, 800];
+  const xAxis = d3.axisBottom(xScale)
+    .tickValues(xTickValues)
+    .tickFormat(d => `$${d}B`)
+    .tickSize(-innerH);
+
+  const xAxisG = g.append('g')
+    .attr('transform', `translate(0,${innerH})`)
+    .call(xAxis);
+
+  xAxisG.selectAll('.tick line')
+    .attr('stroke', 'var(--grid)')
+    .attr('stroke-dasharray', '2,3');
+  xAxisG.selectAll('.tick text')
+    .attr('fill', 'var(--text-secondary)')
+    .attr('font-size', '10px')
+    .attr('font-family', 'DM Sans')
+    .attr('dy', '1em');
+  xAxisG.select('.domain').remove();
+
+  // X label
+  g.append('text')
+    .attr('x', innerW / 2)
+    .attr('y', innerH + 42)
+    .attr('text-anchor', 'middle')
+    .attr('fill', 'var(--text-secondary)')
+    .attr('font-size', '11px')
+    .attr('font-family', 'DM Sans')
+    .text('Trailing 12-Month Revenue ($B)');
+
+  // Y axis: custom symlog ticks
+  const yTickValuesRaw = [-8, -5, -2, 0, 1, 2, 5, 10, 20, 50, 100];
+  const yTickValues = yTickValuesRaw.filter(v => {
+    const pos = yPos(v);
+    return pos >= -5 && pos <= innerH + 5;
+  });
+
+  const yAxisG = g.append('g');
+
+  yTickValues.forEach(v => {
+    const pos = yPos(v);
+    // Grid line
+    yAxisG.append('line')
+      .attr('x1', 0).attr('x2', innerW)
+      .attr('y1', pos).attr('y2', pos)
+      .attr('stroke', v === 0 ? 'var(--text-faint)' : 'var(--grid)')
+      .attr('stroke-dasharray', v === 0 ? 'none' : '2,3')
+      .attr('stroke-width', v === 0 ? 1 : 0.5);
+    // Tick label
+    yAxisG.append('text')
+      .attr('x', -10)
+      .attr('y', pos)
+      .attr('dy', '0.35em')
+      .attr('text-anchor', 'end')
+      .attr('fill', 'var(--text-secondary)')
+      .attr('font-size', '10px')
+      .attr('font-family', 'DM Sans')
+      .text(v === 0 ? '$0' : `$${v}B`);
+  });
+
+  // Y label
+  g.append('text')
+    .attr('transform', `rotate(-90)`)
+    .attr('x', -innerH / 2)
+    .attr('y', -50)
+    .attr('text-anchor', 'middle')
+    .attr('fill', 'var(--text-secondary)')
+    .attr('font-size', '11px')
+    .attr('font-family', 'DM Sans')
+    .text('Trailing 12-Month Net Income ($B)');
+
+  // ——— Bubbles ———
+  const bubblesG = g.append('g')
+    .attr('clip-path', 'url(#chart-clip)');
+
+  // Sort by market cap desc so small bubbles render on top
+  const sortedData = [...data].sort((a, b) => b.market_cap_b - a.market_cap_b);
+
+  const bubbles = bubblesG.selectAll('circle')
+    .data(sortedData, d => d.symbol)
+    .join('circle')
+    .attr('cx', d => xScale(Math.max(0.7, d.ttm_revenue_b)))
+    .attr('cy', d => yPos(d.ttm_net_income_b))
+    .attr('r', d => rScale(d.market_cap_b))
+    .attr('fill', d => priceColor(d.price_change_pct))
+    .attr('fill-opacity', 0.75)
+    .attr('stroke', d => priceColor(d.price_change_pct))
+    .attr('stroke-opacity', 0.3)
+    .attr('stroke-width', 1)
+    .style('cursor', 'pointer');
+
+  // ——— Labels for top companies ———
+  const topCompanies = [...sortedData].slice(0, 20);
+  const labelsG = bubblesG.append('g').attr('class', 'labels');
+  labelsG.selectAll('text')
+    .data(topCompanies)
+    .join('text')
+    .attr('x', d => xScale(Math.max(0.7, d.ttm_revenue_b)))
+    .attr('y', d => {
+      const cy = yPos(d.ttm_net_income_b);
+      const r = rScale(d.market_cap_b);
+      const aboveY = cy - r - 4;
+      // If label would go above clip area, place inside bubble
+      return aboveY < 8 ? cy + 3 : aboveY;
+    })
+    .attr('text-anchor', 'middle')
+    .attr('fill', d => {
+      const cy = yPos(d.ttm_net_income_b);
+      const r = rScale(d.market_cap_b);
+      return (cy - r - 4) < 8 ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)';
+    })
+    .attr('font-size', d => {
+      const cy = yPos(d.ttm_net_income_b);
+      const r = rScale(d.market_cap_b);
+      return (cy - r - 4) < 8 ? '10px' : '9px';
+    })
+    .attr('font-family', 'DM Sans')
+    .attr('font-weight', '500')
+    .attr('pointer-events', 'none')
+    .text(d => d.symbol);
+
+  // ——— Zoom ———
+  let currentTransform = d3.zoomIdentity;
+
+  const zoom = d3.zoom()
+    .scaleExtent([1, 20])
+    .translateExtent([[0, 0], [innerW, innerH]])
+    .extent([[0, 0], [innerW, innerH]])
+    .on('zoom', (event) => {
+      currentTransform = event.transform;
+      const newX = currentTransform.rescaleX(xScale);
+      const newYLinear = currentTransform.rescaleY(yScale);
+
+      bubbles
+        .attr('cx', d => newX(Math.max(0.7, d.ttm_revenue_b)))
+        .attr('cy', d => {
+          const sv = symlog(d.ttm_net_income_b);
+          return newYLinear(sv);
+        });
+
+      // Update labels
+      labelsG.selectAll('text')
+        .attr('x', d => newX(Math.max(0.7, d.ttm_revenue_b)))
+        .attr('y', d => {
+          const cy = newYLinear(symlog(d.ttm_net_income_b));
+          const r = rScale(d.market_cap_b);
+          const aboveY = cy - r - 4;
+          return aboveY < 8 ? cy + 3 : aboveY;
+        });
+
+      // Update x axis
+      xAxisG.call(
+        d3.axisBottom(newX)
+          .tickValues(xTickValues.filter(v => {
+            const px = newX(v);
+            return px >= 0 && px <= innerW;
+          }))
+          .tickFormat(d => `$${d}B`)
+          .tickSize(-innerH)
+      );
+      xAxisG.selectAll('.tick line')
+        .attr('stroke', 'var(--grid)')
+        .attr('stroke-dasharray', '2,3');
+      xAxisG.selectAll('.tick text')
+        .attr('fill', 'var(--text-secondary)')
+        .attr('font-size', '10px')
+        .attr('font-family', 'DM Sans')
+        .attr('dy', '1em');
+      xAxisG.select('.domain').remove();
+
+      // Update y axis ticks
+      yAxisG.selectAll('*').remove();
+      yTickValuesRaw.forEach(v => {
+        const pos = newYLinear(symlog(v));
+        if (pos < -5 || pos > innerH + 5) return;
+        yAxisG.append('line')
+          .attr('x1', 0).attr('x2', innerW)
+          .attr('y1', pos).attr('y2', pos)
+          .attr('stroke', v === 0 ? 'var(--text-faint)' : 'var(--grid)')
+          .attr('stroke-dasharray', v === 0 ? 'none' : '2,3')
+          .attr('stroke-width', v === 0 ? 1 : 0.5);
+        yAxisG.append('text')
+          .attr('x', -10).attr('y', pos)
+          .attr('dy', '0.35em')
+          .attr('text-anchor', 'end')
+          .attr('fill', 'var(--text-secondary)')
+          .attr('font-size', '10px')
+          .attr('font-family', 'DM Sans')
+          .text(v === 0 ? '$0' : `$${v}B`);
+      });
+    });
+
+  // Apply zoom to a transparent overlay rect
+  const zoomRect = g.append('rect')
+    .attr('width', innerW)
+    .attr('height', innerH)
+    .attr('fill', 'transparent')
+    .style('cursor', 'grab')
+    .call(zoom);
+
+  // Raise bubbles above zoom rect for events
+  // Actually we need events on the overlay, so we handle tooltip via overlay
+  zoomRect.on('mousemove', handleMouseMove)
+    .on('mouseleave', hideTooltip);
+
+  document.getElementById('resetZoom').addEventListener('click', () => {
+    zoomRect.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+  });
+
+  // ——— Tooltip ———
+  const tooltipEl = document.getElementById('tooltip');
+
+  function handleMouseMove(event) {
+    const [mx, my] = d3.pointer(event);
+    // Find closest bubble using transformed coordinates
+    let closest = null;
+    let closestDist = Infinity;
+
+    const newX = currentTransform.rescaleX(xScale);
+    const newYLinear = currentTransform.rescaleY(yScale);
+
+    sortedData.forEach(d => {
+      if (d._dimmed) return;
+      const cx = newX(Math.max(0.7, d.ttm_revenue_b));
+      const cy = newYLinear(symlog(d.ttm_net_income_b));
+      const r = rScale(d.market_cap_b);
+      const dist = Math.sqrt((mx - cx) ** 2 + (my - cy) ** 2);
+      if (dist < r + 8 && dist < closestDist) {
+        closestDist = dist;
+        closest = d;
+      }
+    });
+
+    if (closest) {
+      showTooltip(closest, event.clientX, event.clientY);
+      // Highlight
+      bubbles.attr('fill-opacity', dd => dd === closest ? 0.95 : 0.3)
+        .attr('stroke-opacity', dd => dd === closest ? 0.8 : 0.1);
+    } else {
+      hideTooltip();
+      restoreOpacity();
+    }
+  }
+
+  function showTooltip(d, clientX, clientY) {
+    const pctClass = d.price_change_pct >= 0 ? 'tooltip-positive' : 'tooltip-negative';
+    const pctSign = d.price_change_pct >= 0 ? '+' : '';
+    tooltipEl.innerHTML = `
+      <div class="tooltip-header">
+        <span class="tooltip-name">${d.name}</span>
+        <span class="tooltip-ticker">${d.symbol}</span>
+      </div>
+      <div class="tooltip-sector">${d.sector}</div>
+      <div class="tooltip-grid">
+        <span class="tooltip-label">Revenue</span>
+        <span class="tooltip-value">$${d.ttm_revenue_b.toFixed(1)}B</span>
+        <span class="tooltip-label">Net Income</span>
+        <span class="tooltip-value ${d.ttm_net_income_b < 0 ? 'tooltip-negative' : ''}">${d.ttm_net_income_b < 0 ? '-' : ''}$${Math.abs(d.ttm_net_income_b).toFixed(1)}B</span>
+        <span class="tooltip-label">Market Cap</span>
+        <span class="tooltip-value">$${d.market_cap_b.toFixed(0)}B</span>
+        <span class="tooltip-label">Price</span>
+        <span class="tooltip-value">$${d.price.toFixed(2)}</span>
+        <span class="tooltip-label">12M Change</span>
+        <span class="tooltip-value ${pctClass}">${pctSign}${d.price_change_pct.toFixed(1)}%</span>
+        <span class="tooltip-label">Profit Margin</span>
+        <span class="tooltip-value">${d.profit_margin.toFixed(1)}%</span>
+      </div>
+    `;
+    tooltipEl.classList.add('visible');
+    // Position
+    const tw = tooltipEl.offsetWidth;
+    const th = tooltipEl.offsetHeight;
+    let tx = clientX + 16;
+    let ty = clientY - 12;
+    if (tx + tw > window.innerWidth - 16) tx = clientX - tw - 16;
+    if (ty + th > window.innerHeight - 16) ty = clientY - th - 16;
+    if (ty < 8) ty = 8;
+    tooltipEl.style.left = tx + 'px';
+    tooltipEl.style.top = ty + 'px';
+  }
+
+  function hideTooltip() {
+    tooltipEl.classList.remove('visible');
+  }
+
+  function restoreOpacity() {
+    bubbles.attr('fill-opacity', d => d._dimmed ? 0.08 : 0.75)
+      .attr('stroke-opacity', d => d._dimmed ? 0.03 : 0.3);
+  }
+
+  // ——— Sector filter pills ———
+  const sectorBar = document.getElementById('sectorBar');
+  let activeSector = 'All';
+
+  function renderPills() {
+    sectorBar.innerHTML = '';
+    const allPill = document.createElement('button');
+    allPill.className = 'sector-pill' + (activeSector === 'All' ? ' active' : '');
+    allPill.textContent = 'All';
+    allPill.style.cssText = activeSector === 'All' ? 'background: #30363d; color: #e6edf3;' : '';
+    allPill.onclick = () => { activeSector = 'All'; applyFilter(); };
+    sectorBar.appendChild(allPill);
+
+    sectors.forEach(s => {
+      const pill = document.createElement('button');
+      pill.className = 'sector-pill' + (activeSector === s ? ' active' : '');
+      if (activeSector === s) {
+        pill.style.background = SECTOR_COLORS[s];
+        pill.style.color = '#0d1117';
+        pill.style.borderColor = SECTOR_COLORS[s];
+      }
+      pill.textContent = s;
+      pill.onclick = () => { activeSector = s; applyFilter(); };
+      sectorBar.appendChild(pill);
+    });
+  }
+
+  function applyFilter() {
+    renderPills();
+    sortedData.forEach(d => {
+      d._dimmed = activeSector !== 'All' && d.sector !== activeSector;
+    });
+    bubbles.transition().duration(400)
+      .attr('fill-opacity', d => d._dimmed ? 0.08 : 0.75)
+      .attr('stroke-opacity', d => d._dimmed ? 0.03 : 0.3);
+    labelsG.selectAll('text').transition().duration(400)
+      .attr('opacity', d => d._dimmed ? 0.1 : 1);
+  }
+
+  renderPills();
+
+  // ——— Search ———
+  const searchInput = document.getElementById('search');
+  let searchHighlight = null;
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    searchHighlight = null;
+
+    if (!q) {
+      bubbles.attr('stroke', d => priceColor(d.price_change_pct))
+        .attr('stroke-width', 1);
+      restoreOpacity();
+      return;
+    }
+
+    const matches = sortedData.filter(d =>
+      d.name.toLowerCase().includes(q) || d.symbol.toLowerCase().includes(q)
+    );
+
+    bubbles
+      .attr('fill-opacity', d => matches.includes(d) ? 0.95 : 0.08)
+      .attr('stroke', d => matches.includes(d) ? '#fff' : priceColor(d.price_change_pct))
+      .attr('stroke-width', d => matches.includes(d) ? 2 : 1)
+      .attr('stroke-opacity', d => matches.includes(d) ? 1 : 0.05);
+  });
+
+  // ——— Color legend ———
+  const canvas = document.getElementById('colorLegend');
+  const ctx = canvas.getContext('2d');
+  for (let i = 0; i < 180; i++) {
+    const pct = -50 + (i / 179) * 150;
+    ctx.fillStyle = priceColor(pct);
+    ctx.fillRect(i, 0, 1, 10);
+  }
+
+  // ——— Size legend ———
+  const sizeLegendEl = document.getElementById('sizeLegend');
+  const sizeSamples = [
+    { label: '$10B', val: 10 },
+    { label: '$100B', val: 100 },
+    { label: '$1T', val: 1000 },
+  ];
+  // Build a concentric bubble legend using SVG
+  const maxLegendR = Math.min(rScale(1000), 28);
+  const legendScale = d3.scaleSqrt().domain([0, 1000]).range([0, maxLegendR]);
+  const legendSvgW = 180;
+  const legendSvgH = maxLegendR * 2 + 22;
+  const legendSvg = d3.select(sizeLegendEl)
+    .append('svg')
+    .attr('width', legendSvgW)
+    .attr('height', legendSvgH);
+
+  const cx = maxLegendR + 4;
+  const bottom = legendSvgH - 4;
+
+  sizeSamples.forEach(s => {
+    const r = legendScale(s.val);
+    legendSvg.append('circle')
+      .attr('cx', cx)
+      .attr('cy', bottom - r)
+      .attr('r', r)
+      .attr('fill', 'none')
+      .attr('stroke', 'var(--text-faint)')
+      .attr('stroke-width', 0.8)
+      .attr('stroke-dasharray', '2,2');
+    // Label line from top of circle to the right
+    const lineY = bottom - r * 2;
+    legendSvg.append('line')
+      .attr('x1', cx + r + 2)
+      .attr('x2', cx + maxLegendR + 16)
+      .attr('y1', lineY)
+      .attr('y2', lineY)
+      .attr('stroke', 'var(--text-faint)')
+      .attr('stroke-width', 0.5)
+      .attr('stroke-dasharray', '1,2');
+    legendSvg.append('text')
+      .attr('x', cx + maxLegendR + 19)
+      .attr('y', lineY)
+      .attr('dy', '0.35em')
+      .attr('fill', 'var(--text-faint)')
+      .attr('font-size', '9px')
+      .attr('font-family', 'DM Sans')
+      .text(s.label);
+  });
+
+  // ——— Insights (dynamic) ———
+  const fmtB = v => `$${d3.format(',.1f')(v)}B`;
+  const fmtPct = v => `${d3.format('+.1f')(v)}%`;
+  const avg = arr => arr.length ? d3.mean(arr) : 0;
+
+  const totalRevenue = d3.sum(data, d => d.ttm_revenue_b);
+  const totalIncome = d3.sum(data, d => d.ttm_net_income_b);
+  const totalCap = d3.sum(data, d => d.market_cap_b);
+
+  const topByCap = [...sortedData].slice(0, 5);
+  const topSymbols = topByCap.map(d => d.symbol).join(', ');
+  const topRevenue = d3.sum(topByCap, d => d.ttm_revenue_b);
+  const topIncome = d3.sum(topByCap, d => d.ttm_net_income_b);
+  const topCap = d3.sum(topByCap, d => d.market_cap_b);
+
+  const lossMakers = data.filter(d => d.ttm_net_income_b < 0).sort((a, b) => a.ttm_net_income_b - b.ttm_net_income_b);
+  const worstLoss3 = lossMakers.slice(0, 3).map(d => `${d.symbol} (${fmtB(d.ttm_net_income_b)})`).join(', ');
+
+  const bestPerformers = [...data].sort((a, b) => b.price_change_pct - a.price_change_pct).slice(0, 3);
+  const worstPerformers = [...data].sort((a, b) => a.price_change_pct - b.price_change_pct).slice(0, 3);
+
+  const highMargin = [...data]
+    .filter(d => Number.isFinite(d.profit_margin))
+    .sort((a, b) => b.profit_margin - a.profit_margin)
+    .slice(0, 3);
+
+  const sectorStats = d3.rollups(
+    data,
+    values => ({
+      n: values.length,
+      avgReturn: avg(values.map(v => v.price_change_pct)),
+      avgMargin: avg(values.map(v => v.profit_margin)),
+      totalCap: d3.sum(values, v => v.market_cap_b),
+      totalIncome: d3.sum(values, v => v.ttm_net_income_b)
+    }),
+    d => d.sector
+  ).map(([sector, stats]) => ({ sector, ...stats }));
+
+  const topSectorByCap = [...sectorStats].sort((a, b) => b.totalCap - a.totalCap)[0];
+  const worstSectorByReturn = [...sectorStats].sort((a, b) => a.avgReturn - b.avgReturn)[0];
+  const bestSectorByReturn = [...sectorStats].sort((a, b) => b.avgReturn - a.avgReturn)[0];
+
+  const insights = [
+    {
+      title: 'Mega-Cap Concentration',
+      text: `Top 5 by market cap (${topSymbols}) account for ${d3.format('.1%')(topCap / totalCap)} of total market value, with ${fmtB(topRevenue)} revenue and ${fmtB(topIncome)} net income combined.`,
+      color: '#6e9eff'
+    },
+    {
+      title: 'Profit Pool Snapshot',
+      text: `Aggregate S&P 500 totals in this dataset: ${fmtB(totalRevenue)} revenue and ${fmtB(totalIncome)} net income.`,
+      color: '#3fb950'
+    },
+    {
+      title: 'Loss-Making Companies',
+      text: `${lossMakers.length} companies show negative TTM net income. Largest losses: ${worstLoss3 || 'N/A'}.`,
+      color: '#f85149'
+    },
+    {
+      title: 'Leaders vs Laggards',
+      text: `Best 12-month returns: ${bestPerformers.map(d => `${d.symbol} (${fmtPct(d.price_change_pct)})`).join(', ')}. Worst: ${worstPerformers.map(d => `${d.symbol} (${fmtPct(d.price_change_pct)})`).join(', ')}.`,
+      color: '#ffa657'
+    },
+    {
+      title: 'Sector With Largest Market Value',
+      text: `${topSectorByCap.sector} leads with ${fmtB(topSectorByCap.totalCap)} in market cap and ${fmtB(topSectorByCap.totalIncome)} net income.`,
+      color: '#d2a8ff'
+    },
+    {
+      title: 'Sector Performance Spread',
+      text: `${bestSectorByReturn.sector} has the strongest average return (${fmtPct(bestSectorByReturn.avgReturn)}), while ${worstSectorByReturn.sector} is weakest (${fmtPct(worstSectorByReturn.avgReturn)}).`,
+      color: '#a5d6ff'
+    },
+    {
+      title: 'Highest Profit Margins',
+      text: `Top margins: ${highMargin.map(d => `${d.symbol} (${d3.format('.1f')(d.profit_margin)}%)`).join(', ')}.`,
+      color: '#cea5bf'
+    }
+  ];
+
+  const insightsGrid = document.getElementById('insightsGrid');
+  insights.forEach(ins => {
+    const card = document.createElement('div');
+    card.className = 'insight-card';
+    card.style.borderLeftColor = ins.color;
+    card.innerHTML = `<h3>${ins.title}</h3><p>${ins.text}</p>`;
+    insightsGrid.appendChild(card);
+  });
+
+})();
+</script>
+</body>
+</html>
