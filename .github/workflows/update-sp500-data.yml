@@ -21,11 +21,11 @@ jobs:
 
       - name: Generate latest data.json
         env:
-          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
-          FMP_BASE_URL: ${{ vars.FMP_BASE_URL }}
+          SEC_CONTACT_EMAIL: ${{ vars.SEC_CONTACT_EMAIL }}
           CONSTITUENTS_CSV_URLS: ${{ vars.CONSTITUENTS_CSV_URLS }}
           OUT_FILE: ./data.json
-          CONCURRENCY: 8
+          YAHOO_BATCH_SIZE: 40
+          SEC_REQUEST_DELAY_MS: 150
         run: node ./scripts/update-data.js
 
       - name: Upload to Supabase Storage (upsert)

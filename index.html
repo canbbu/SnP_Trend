@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
 <!--
    ______                            __
@@ -20,11 +20,11 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>S&P 500 Landscape — Revenue, Profitability & Market Value</title>
-<meta name="description" content="Interactive bubble chart visualizing S&P 500 companies by revenue, profitability, and market capitalization.">
+<title>S&amp;P 500 랜드스케이프 — 매출·이익·시가총액</title>
+<meta name="description" content="S&amp;P 500 기업의 매출, 순이익, 시가총액을 한눈에 보는 인터랙티브 버블 차트입니다.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -40,7 +40,7 @@
   --surface-hover: #1c2129;
 }
 html, body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Noto Sans KR', 'DM Sans', sans-serif;
   background: var(--bg);
   color: var(--text-primary);
   line-height: 1.5;
@@ -90,8 +90,21 @@ html, body {
   font-size: 0.6875rem;
   color: var(--text-faint);
   margin-top: 0.25rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
+}
+.data-source-note {
+  font-size: 0.65rem;
+  color: var(--text-faint);
+  margin-top: 0.35rem;
+  max-width: 36rem;
+  line-height: 1.45;
+}
+.legend-caption {
+  font-size: 0.55rem;
+  color: var(--text-faint);
+  margin-top: 0.3rem;
+  max-width: 200px;
+  line-height: 1.35;
 }
 .header-right {
   display: flex;
@@ -116,7 +129,7 @@ html, body {
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text-primary);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Noto Sans KR', 'DM Sans', sans-serif;
   font-size: 0.8125rem;
   padding: 0.4rem 0.75rem 0.4rem 2rem;
   border-radius: 8px;
@@ -135,7 +148,7 @@ html, body {
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text-secondary);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Noto Sans KR', 'DM Sans', sans-serif;
   font-size: 0.75rem;
   font-weight: 500;
   padding: 0.4rem 0.85rem;
@@ -154,7 +167,7 @@ html, body {
   flex-wrap: wrap;
 }
 .sector-pill {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Noto Sans KR', 'DM Sans', sans-serif;
   font-size: 0.6875rem;
   font-weight: 500;
   padding: 0.25rem 0.7rem;
@@ -368,29 +381,107 @@ html, body {
   stroke: #fff;
   stroke-width: 2;
 }
+
+/* Top 50 table */
+.top50-section {
+  padding: 2rem 2rem 0;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.top50-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #e6edf3;
+}
+.top50-header .top50-note {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.35rem;
+  line-height: 1.5;
+  max-width: 720px;
+}
+.top50-toolbar {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.top50-toolbar label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.top50-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: 'Noto Sans KR', 'DM Sans', sans-serif;
+  font-size: 0.8125rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.table-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.top50-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+.top50-table th,
+.top50-table td {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+.top50-table th {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.6875rem;
+  white-space: nowrap;
+  background: rgba(22, 27, 34, 0.6);
+}
+.top50-table tbody tr:hover {
+  background: var(--surface-hover);
+}
+.top50-table td:nth-child(4),
+.top50-table td:nth-child(5),
+.top50-table td:nth-child(6) {
+  text-align: right;
+}
+.top50-table .pct-pos { color: #3fb950; }
+.top50-table .pct-neg { color: #f85149; }
+.top50-table .na { color: var(--text-faint); }
 </style>
 </head>
 <body>
 
 <div class="mobile-message">
   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-  <h2>Best viewed on desktop</h2>
-  <p>This interactive visualization works best on screens wider than 860px. Please visit on a desktop or laptop for the full experience.</p>
+  <h2>데스크톱에서 보기 권장</h2>
+  <p>이 시각화는 가로 860px 이상 화면에 최적화되어 있습니다. PC 또는 노트북으로 접속해 주세요.</p>
 </div>
 
 <div class="app-container">
   <header class="header">
     <div class="header-left">
-      <h1>S&amp;P 500 Landscape</h1>
-      <div class="subtitle">Revenue, Profitability, and Market Value of America's Largest Companies</div>
-      <div class="date-tag" id="dataAsOf">Data as of —</div>
+      <h1>S&amp;P 500 랜드스케이프</h1>
+      <div class="subtitle">미국 대표 기업의 매출·수익성·시가총액</div>
+      <div class="date-tag" id="dataAsOf">기준일 —</div>
+      <p class="data-source-note" id="dataSourceNote" hidden></p>
     </div>
     <div class="header-right">
       <div class="search-container">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" class="search-input" id="search" placeholder="Search company or ticker…" autocomplete="off">
+        <input type="text" class="search-input" id="search" placeholder="기업명 또는 티커 검색…" autocomplete="off">
       </div>
-      <button class="btn-reset" id="resetZoom">Reset Zoom</button>
+      <button class="btn-reset" id="resetZoom">확대 초기화</button>
     </div>
   </header>
 
@@ -399,37 +490,57 @@ html, body {
   <div class="chart-wrapper" id="chartWrapper">
     <div class="legend-container">
       <div class="legend-box">
-        <div class="legend-title">12-Month Price Change</div>
+        <div class="legend-title">가격 변동률 (참고)</div>
         <canvas class="color-gradient-bar" id="colorLegend" width="180" height="10"></canvas>
         <div class="color-labels">
           <span>-50%</span>
           <span>0%</span>
           <span>+100%</span>
         </div>
+        <p class="legend-caption" id="colorLegendCaption"></p>
       </div>
       <div class="legend-box">
-        <div class="legend-title">Market Cap</div>
+        <div class="legend-title">시가총액</div>
         <div class="size-legend-row" id="sizeLegend"></div>
       </div>
     </div>
     <div class="tooltip" id="tooltip"></div>
   </div>
 
+  <section class="top50-section" id="top50Section">
+    <div class="top50-header">
+      <h2>상위 50개 기업</h2>
+      <p class="top50-note">시가총액은 내부적으로 십억 달러(B USD)로 저장하며, 표에는 1조(1000B) 이상은 T, 미만은 B로 표시합니다. 값은 <strong>Stooq 최근 종가 × SEC 공시 유통주식수</strong>로 추정합니다. 브로커·언론 화면과는 조회 시각, 주식수 정의(보통주만 vs 희석 등), 가격 소스가 달라 <strong>소수 % 수준 차이</strong>가 날 수 있습니다. PER(추정)은 TTM 순이익이 양수일 때 시총÷순이익이며, 적자·데이터 부족 시 「—」입니다. PER 순은 시총 1B USD 미만(수집 이상 가능) 종목을 제외합니다.</p>
+      <div class="top50-toolbar">
+        <label for="top50Sort">정렬 기준</label>
+        <select id="top50Sort" class="top50-select" aria-label="상위 50 목록 정렬">
+          <option value="cap_desc">시가총액 순 (높은 순)</option>
+          <option value="pe_asc">PER 순 (낮은 순)</option>
+          <option value="pe_desc">PER 순 (높은 순)</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="top50-table" id="top50Table" aria-label="상위 50개 기업 (정렬 선택 가능)"></table>
+    </div>
+  </section>
+
   <section class="insights-section">
     <div class="insights-header">
-      <h2>Key Insights</h2>
-      <p>12 notable patterns from the current S&amp;P 500 landscape</p>
+      <h2>주요 인사이트</h2>
+      <p>현재 데이터에서 보이는 패턴 요약</p>
     </div>
     <div class="insights-grid" id="insightsGrid"></div>
   </section>
 
   <footer class="footer">
-    <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Created with Perplexity Computer</a>
+    <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer">Perplexity Computer로 제작</a>
   </footer>
 </div>
 
 <script>
 (async function() {
+  try {
   // ——— Configuration ———
   const SECTOR_COLORS = {
     'Information Technology': '#6e9eff',
@@ -445,6 +556,69 @@ html, body {
     'Real Estate':            '#cea5bf'
   };
 
+  const SECTOR_LABEL_KO = {
+    'Information Technology': '기술',
+    'Health Care': '헬스케어',
+    'Financials': '금융',
+    'Consumer Discretionary': '임의소비재',
+    'Communication Services': '통신서비스',
+    'Industrials': '산업재',
+    'Consumer Staples': '필수소비재',
+    'Energy': '에너지',
+    'Materials': '소재',
+    'Utilities': '유틸리티',
+    'Real Estate': '부동산'
+  };
+
+  function sectorLabelKo(s) {
+    return SECTOR_LABEL_KO[s] || s;
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function fmtTooltipUsdB1(v) {
+    if (!Number.isFinite(v)) return '데이터 없음';
+    return '$' + v.toFixed(1) + 'B';
+  }
+  /** capB = 시가총액(십억 USD). 터미널과 같이 ≥1000B → T, 그 외 B (참고용 표시). */
+  function formatMarketCapHumanHtml(capB) {
+    const n = Number(capB);
+    if (!Number.isFinite(n) || n <= 0) return '<span class="na">데이터 없음</span>';
+    const fmt = x =>
+      new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(x);
+    if (n >= 1000) return `${fmt(n / 1000)}T`;
+    return `${fmt(n)}B`;
+  }
+
+  function formatMarketCapHumanText(capB) {
+    const n = Number(capB);
+    if (!Number.isFinite(n) || n <= 0) return '데이터 없음';
+    const fmt = x =>
+      new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(x);
+    if (n >= 1000) return `${fmt(n / 1000)}T`;
+    return `${fmt(n)}B`;
+  }
+  function fmtTooltipPrice(v) {
+    if (!Number.isFinite(v)) return '데이터 없음';
+    return '$' + v.toFixed(2);
+  }
+  function fmtTooltipPctChange(v) {
+    if (!Number.isFinite(v)) return { text: '데이터 없음', cls: '' };
+    const cls = v >= 0 ? 'tooltip-positive' : 'tooltip-negative';
+    const text = (v >= 0 ? '+' : '') + v.toFixed(1) + '%';
+    return { text, cls };
+  }
+  function fmtTooltipMargin(v) {
+    if (!Number.isFinite(v)) return '데이터 없음';
+    return v.toFixed(1) + '%';
+  }
+
   // ——— Load data ———
   // Supports both legacy array format and envelope format:
   // { as_of, data_source, data: [...] }
@@ -454,15 +628,38 @@ html, body {
   const asOfRaw = Array.isArray(rawPayload) ? null : rawPayload?.as_of;
   const asOfDate = asOfRaw ? new Date(asOfRaw) : null;
   const asOfLabel = asOfDate && !Number.isNaN(asOfDate.getTime())
-    ? asOfDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-    : 'N/A';
+    ? asOfDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })
+    : '없음';
   const asOfEl = document.getElementById('dataAsOf');
-  if (asOfEl) asOfEl.textContent = `Data as of ${asOfLabel}`;
+  if (asOfEl) asOfEl.textContent = `기준일 ${asOfLabel}`;
+
+  const changeNote =
+    (!Array.isArray(rawPayload) && rawPayload?.price_change_note_ko) ||
+    '가격 변동률: 데이터에 Yahoo(52주 근사) 또는 Stooq(직전 거래일 대비) 중 실제 출처가 표시되면 그에 따릅니다.';
+  const dsNote = document.getElementById('dataSourceNote');
+  if (dsNote) {
+    dsNote.textContent = changeNote;
+    dsNote.hidden = false;
+  }
+  const capEl = document.getElementById('colorLegendCaption');
+  if (capEl) capEl.textContent = changeNote;
 
   if (!Array.isArray(data) || data.length === 0) {
-    throw new Error('data.json does not contain chart records.');
+    throw new Error('차트 데이터가 없습니다. data.json을 확인하세요.');
   }
   const sectors = [...new Set(data.map(d => d.sector))].sort();
+
+  /** 후행 PER 추정: 시가총액(십억 USD) ÷ TTM 순이익(십억 USD). 순이익 ≤0 이면 NaN. */
+  function trailingPE(d) {
+    const ni = Number(d.ttm_net_income_b);
+    const cap = Number(d.market_cap_b);
+    if (!Number.isFinite(ni) || ni <= 0) return NaN;
+    if (!Number.isFinite(cap) || cap <= 0) return NaN;
+    return cap / ni;
+  }
+
+  /** PER 순위: 비정상적으로 작은 시총(수집 오류)으로 PER≈0이 되는 행을 막기 위한 하한 (B USD). */
+  const MIN_CAP_B_FOR_PE_RANK = 1;
 
   // ——— Setup dimensions ———
   const wrapper = document.getElementById('chartWrapper');
@@ -499,8 +696,9 @@ html, body {
   function yPos(v) { return yScale(symlog(v)); }
 
   // Size scale
+  const maxCap = d3.max(data, d => d.market_cap_b);
   const rScale = d3.scaleSqrt()
-    .domain([0, d3.max(data, d => d.market_cap_b)])
+    .domain([0, Math.max(maxCap || 0, 1e-6)])
     .range([2.5, 48]);
 
   // Color scale: red-gray-green diverging
@@ -516,6 +714,7 @@ html, body {
     .interpolate(d3.interpolateRgb.gamma(2.2))
     .clamp(true);
   function priceColor(pct) {
+    if (!Number.isFinite(pct)) return '#8b949e';
     const clamped = Math.max(-50, Math.min(100, pct));
     return clamped < 0 ? colorNeg(clamped) : colorPos(clamped);
   }
@@ -562,7 +761,7 @@ html, body {
   xAxisG.selectAll('.tick text')
     .attr('fill', 'var(--text-secondary)')
     .attr('font-size', '10px')
-    .attr('font-family', 'DM Sans')
+    .attr('font-family', "'Noto Sans KR', 'DM Sans'")
     .attr('dy', '1em');
   xAxisG.select('.domain').remove();
 
@@ -573,8 +772,8 @@ html, body {
     .attr('text-anchor', 'middle')
     .attr('fill', 'var(--text-secondary)')
     .attr('font-size', '11px')
-    .attr('font-family', 'DM Sans')
-    .text('Trailing 12-Month Revenue ($B)');
+    .attr('font-family', "'Noto Sans KR', 'DM Sans'")
+    .text('TTM 매출 (십억 달러, $B)');
 
   // Y axis: custom symlog ticks
   const yTickValuesRaw = [-8, -5, -2, 0, 1, 2, 5, 10, 20, 50, 100];
@@ -602,7 +801,7 @@ html, body {
       .attr('text-anchor', 'end')
       .attr('fill', 'var(--text-secondary)')
       .attr('font-size', '10px')
-      .attr('font-family', 'DM Sans')
+      .attr('font-family', "'Noto Sans KR', 'DM Sans'")
       .text(v === 0 ? '$0' : `$${v}B`);
   });
 
@@ -614,8 +813,8 @@ html, body {
     .attr('text-anchor', 'middle')
     .attr('fill', 'var(--text-secondary)')
     .attr('font-size', '11px')
-    .attr('font-family', 'DM Sans')
-    .text('Trailing 12-Month Net Income ($B)');
+    .attr('font-family', "'Noto Sans KR', 'DM Sans'")
+    .text('TTM 순이익 (십억 달러, $B)');
 
   // ——— Bubbles ———
   const bubblesG = g.append('g')
@@ -623,6 +822,76 @@ html, body {
 
   // Sort by market cap desc so small bubbles render on top
   const sortedData = [...data].sort((a, b) => b.market_cap_b - a.market_cap_b);
+
+  function formatTop50CapB(b) {
+    return formatMarketCapHumanHtml(b);
+  }
+  function formatTop50Change(p) {
+    if (!Number.isFinite(p)) return '<span class="na">데이터 없음</span>';
+    const cls = p >= 0 ? 'pct-pos' : 'pct-neg';
+    const sign = p >= 0 ? '+' : '';
+    return `<span class="${cls}">${sign}${p.toFixed(1)}%</span>`;
+  }
+  function formatTop50PE(pe) {
+    if (!Number.isFinite(pe)) return '<span class="na">—</span>';
+    if (pe >= 100) {
+      return new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(pe);
+    }
+    return new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(pe);
+  }
+
+  function sortTop50Rows(mode) {
+    const copy = [...data];
+    if (mode === 'cap_desc') {
+      return copy.sort((a, b) => (b.market_cap_b || 0) - (a.market_cap_b || 0)).slice(0, 50);
+    }
+    const pePool = copy.filter(d => {
+      const cap = Number(d.market_cap_b);
+      const ni = Number(d.ttm_net_income_b);
+      return cap >= MIN_CAP_B_FOR_PE_RANK && ni > 0 && Number.isFinite(cap) && Number.isFinite(ni);
+    });
+    const scored = pePool.map(d => ({ d, pe: trailingPE(d) }));
+    function cmpPe(a, b, desc) {
+      const fa = Number.isFinite(a.pe);
+      const fb = Number.isFinite(b.pe);
+      if (fa && fb) return desc ? b.pe - a.pe : a.pe - b.pe;
+      if (fa && !fb) return -1;
+      if (!fa && fb) return 1;
+      return (b.d.market_cap_b || 0) - (a.d.market_cap_b || 0);
+    }
+    if (mode === 'pe_asc') {
+      return scored.sort((a, b) => cmpPe(a, b, false)).slice(0, 50).map(x => x.d);
+    }
+    if (mode === 'pe_desc') {
+      return scored.sort((a, b) => cmpPe(a, b, true)).slice(0, 50).map(x => x.d);
+    }
+    return copy.slice(0, 50);
+  }
+
+  function renderTop50Table(mode) {
+    const top50Table = document.getElementById('top50Table');
+    if (!top50Table) return;
+    const top50 = sortTop50Rows(mode);
+    top50Table.innerHTML =
+      '<thead><tr>' +
+      '<th>순위</th><th>티커</th><th>기업명</th><th>시가총액</th><th>PER (추정)</th><th>가격 변동률</th>' +
+      '</tr></thead><tbody>' +
+      top50.map((d, i) => {
+        const pe = trailingPE(d);
+        return (
+          `<tr><td>${i + 1}</td><td>${escapeHtml(d.symbol)}</td><td>${escapeHtml(d.name)}</td>` +
+          `<td>${formatTop50CapB(d.market_cap_b)}</td><td>${formatTop50PE(pe)}</td>` +
+          `<td>${formatTop50Change(d.price_change_pct)}</td></tr>`
+        );
+      }).join('') +
+      '</tbody>';
+  }
+
+  renderTop50Table('cap_desc');
+  const top50SortEl = document.getElementById('top50Sort');
+  if (top50SortEl) {
+    top50SortEl.addEventListener('change', () => renderTop50Table(top50SortEl.value));
+  }
 
   const bubbles = bubblesG.selectAll('circle')
     .data(sortedData, d => d.symbol)
@@ -662,7 +931,7 @@ html, body {
       const r = rScale(d.market_cap_b);
       return (cy - r - 4) < 8 ? '10px' : '9px';
     })
-    .attr('font-family', 'DM Sans')
+    .attr('font-family', "'Noto Sans KR', 'DM Sans'")
     .attr('font-weight', '500')
     .attr('pointer-events', 'none')
     .text(d => d.symbol);
@@ -712,7 +981,7 @@ html, body {
       xAxisG.selectAll('.tick text')
         .attr('fill', 'var(--text-secondary)')
         .attr('font-size', '10px')
-        .attr('font-family', 'DM Sans')
+        .attr('font-family', "'Noto Sans KR', 'DM Sans'")
         .attr('dy', '1em');
       xAxisG.select('.domain').remove();
 
@@ -733,7 +1002,7 @@ html, body {
           .attr('text-anchor', 'end')
           .attr('fill', 'var(--text-secondary)')
           .attr('font-size', '10px')
-          .attr('font-family', 'DM Sans')
+          .attr('font-family', "'Noto Sans KR', 'DM Sans'")
           .text(v === 0 ? '$0' : `$${v}B`);
       });
     });
@@ -791,27 +1060,38 @@ html, body {
   }
 
   function showTooltip(d, clientX, clientY) {
-    const pctClass = d.price_change_pct >= 0 ? 'tooltip-positive' : 'tooltip-negative';
-    const pctSign = d.price_change_pct >= 0 ? '+' : '';
+    const ni = d.ttm_net_income_b;
+    const niFinite = Number.isFinite(ni);
+    const niNeg = niFinite && ni < 0;
+    const niHtml = niFinite
+      ? `${niNeg ? '-' : ''}$${Math.abs(ni).toFixed(1)}B`
+      : '데이터 없음';
+    const pct = fmtTooltipPctChange(d.price_change_pct);
+    const peVal = trailingPE(d);
+    const peDisp = Number.isFinite(peVal)
+      ? new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 1, minimumFractionDigits: 1 }).format(peVal)
+      : '—';
     tooltipEl.innerHTML = `
       <div class="tooltip-header">
-        <span class="tooltip-name">${d.name}</span>
-        <span class="tooltip-ticker">${d.symbol}</span>
+        <span class="tooltip-name">${escapeHtml(d.name)}</span>
+        <span class="tooltip-ticker">${escapeHtml(d.symbol)}</span>
       </div>
-      <div class="tooltip-sector">${d.sector}</div>
+      <div class="tooltip-sector">${escapeHtml(sectorLabelKo(d.sector))}</div>
       <div class="tooltip-grid">
-        <span class="tooltip-label">Revenue</span>
-        <span class="tooltip-value">$${d.ttm_revenue_b.toFixed(1)}B</span>
-        <span class="tooltip-label">Net Income</span>
-        <span class="tooltip-value ${d.ttm_net_income_b < 0 ? 'tooltip-negative' : ''}">${d.ttm_net_income_b < 0 ? '-' : ''}$${Math.abs(d.ttm_net_income_b).toFixed(1)}B</span>
-        <span class="tooltip-label">Market Cap</span>
-        <span class="tooltip-value">$${d.market_cap_b.toFixed(0)}B</span>
-        <span class="tooltip-label">Price</span>
-        <span class="tooltip-value">$${d.price.toFixed(2)}</span>
-        <span class="tooltip-label">12M Change</span>
-        <span class="tooltip-value ${pctClass}">${pctSign}${d.price_change_pct.toFixed(1)}%</span>
-        <span class="tooltip-label">Profit Margin</span>
-        <span class="tooltip-value">${d.profit_margin.toFixed(1)}%</span>
+        <span class="tooltip-label">TTM 매출</span>
+        <span class="tooltip-value">${fmtTooltipUsdB1(d.ttm_revenue_b)}</span>
+        <span class="tooltip-label">TTM 순이익</span>
+        <span class="tooltip-value ${niNeg ? 'tooltip-negative' : ''}">${niHtml}</span>
+        <span class="tooltip-label">시가총액</span>
+        <span class="tooltip-value">${escapeHtml(formatMarketCapHumanText(d.market_cap_b))}</span>
+        <span class="tooltip-label">PER (추정)</span>
+        <span class="tooltip-value">${peDisp}</span>
+        <span class="tooltip-label">주가</span>
+        <span class="tooltip-value">${fmtTooltipPrice(d.price)}</span>
+        <span class="tooltip-label">가격 변동률</span>
+        <span class="tooltip-value ${pct.cls}">${pct.text}</span>
+        <span class="tooltip-label">순이익률</span>
+        <span class="tooltip-value">${fmtTooltipMargin(d.profit_margin)}</span>
       </div>
     `;
     tooltipEl.classList.add('visible');
@@ -844,7 +1124,7 @@ html, body {
     sectorBar.innerHTML = '';
     const allPill = document.createElement('button');
     allPill.className = 'sector-pill' + (activeSector === 'All' ? ' active' : '');
-    allPill.textContent = 'All';
+    allPill.textContent = '전체';
     allPill.style.cssText = activeSector === 'All' ? 'background: #30363d; color: #e6edf3;' : '';
     allPill.onclick = () => { activeSector = 'All'; applyFilter(); };
     sectorBar.appendChild(allPill);
@@ -857,7 +1137,7 @@ html, body {
         pill.style.color = '#0d1117';
         pill.style.borderColor = SECTOR_COLORS[s];
       }
-      pill.textContent = s;
+      pill.textContent = sectorLabelKo(s);
       pill.onclick = () => { activeSector = s; applyFilter(); };
       sectorBar.appendChild(pill);
     });
@@ -903,21 +1183,23 @@ html, body {
       .attr('stroke-opacity', d => matches.includes(d) ? 1 : 0.05);
   });
 
-  // ——— Color legend ———
+  // ——— Color legend (가격 변동률 스케일; 버블 색은 섹터와 무관) ———
   const canvas = document.getElementById('colorLegend');
-  const ctx = canvas.getContext('2d');
-  for (let i = 0; i < 180; i++) {
-    const pct = -50 + (i / 179) * 150;
-    ctx.fillStyle = priceColor(pct);
-    ctx.fillRect(i, 0, 1, 10);
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    for (let i = 0; i < 180; i++) {
+      const pct = -50 + (i / 179) * 150;
+      ctx.fillStyle = priceColor(pct);
+      ctx.fillRect(i, 0, 1, 10);
+    }
   }
 
   // ——— Size legend ———
   const sizeLegendEl = document.getElementById('sizeLegend');
   const sizeSamples = [
-    { label: '$10B', val: 10 },
-    { label: '$100B', val: 100 },
-    { label: '$1T', val: 1000 },
+    { label: '10B USD', val: 10 },
+    { label: '100B USD', val: 100 },
+    { label: '1T USD', val: 1000 },
   ];
   // Build a concentric bubble legend using SVG
   const maxLegendR = Math.min(rScale(1000), 28);
@@ -958,7 +1240,7 @@ html, body {
       .attr('dy', '0.35em')
       .attr('fill', 'var(--text-faint)')
       .attr('font-size', '9px')
-      .attr('font-family', 'DM Sans')
+      .attr('font-family', "'Noto Sans KR', 'DM Sans'")
       .text(s.label);
   });
 
@@ -980,8 +1262,9 @@ html, body {
   const lossMakers = data.filter(d => d.ttm_net_income_b < 0).sort((a, b) => a.ttm_net_income_b - b.ttm_net_income_b);
   const worstLoss3 = lossMakers.slice(0, 3).map(d => `${d.symbol} (${fmtB(d.ttm_net_income_b)})`).join(', ');
 
-  const bestPerformers = [...data].sort((a, b) => b.price_change_pct - a.price_change_pct).slice(0, 3);
-  const worstPerformers = [...data].sort((a, b) => a.price_change_pct - b.price_change_pct).slice(0, 3);
+  const withValidReturn = data.filter(d => Number.isFinite(d.price_change_pct));
+  const bestPerformers = [...withValidReturn].sort((a, b) => b.price_change_pct - a.price_change_pct).slice(0, 3);
+  const worstPerformers = [...withValidReturn].sort((a, b) => a.price_change_pct - b.price_change_pct).slice(0, 3);
 
   const highMargin = [...data]
     .filter(d => Number.isFinite(d.profit_margin))
@@ -1004,40 +1287,49 @@ html, body {
   const worstSectorByReturn = [...sectorStats].sort((a, b) => a.avgReturn - b.avgReturn)[0];
   const bestSectorByReturn = [...sectorStats].sort((a, b) => b.avgReturn - a.avgReturn)[0];
 
+  const fmtPctSafe = v => (Number.isFinite(v) ? fmtPct(v) : '데이터 없음');
+  const capShareText = totalCap > 0 ? d3.format('.1%')(topCap / totalCap) : '—';
+  const bestList = bestPerformers.length
+    ? bestPerformers.map(d => `${d.symbol} (${fmtPct(d.price_change_pct)})`).join(', ')
+    : '데이터 없음';
+  const worstList = worstPerformers.length
+    ? worstPerformers.map(d => `${d.symbol} (${fmtPct(d.price_change_pct)})`).join(', ')
+    : '데이터 없음';
+
   const insights = [
     {
-      title: 'Mega-Cap Concentration',
-      text: `Top 5 by market cap (${topSymbols}) account for ${d3.format('.1%')(topCap / totalCap)} of total market value, with ${fmtB(topRevenue)} revenue and ${fmtB(topIncome)} net income combined.`,
+      title: '메가캡 집중도',
+      text: `시가총액 상위 5곳(${topSymbols})이 전체 시총의 ${capShareText}를 차지하며, 합산 매출 ${fmtB(topRevenue)}, 합산 순이익 ${fmtB(topIncome)}입니다.`,
       color: '#6e9eff'
     },
     {
-      title: 'Profit Pool Snapshot',
-      text: `Aggregate S&P 500 totals in this dataset: ${fmtB(totalRevenue)} revenue and ${fmtB(totalIncome)} net income.`,
+      title: '이익 풀 스냅샷',
+      text: `이 데이터셋 기준 S&P 500 전체 매출 합계 ${fmtB(totalRevenue)}, 순이익 합계 ${fmtB(totalIncome)}입니다.`,
       color: '#3fb950'
     },
     {
-      title: 'Loss-Making Companies',
-      text: `${lossMakers.length} companies show negative TTM net income. Largest losses: ${worstLoss3 || 'N/A'}.`,
+      title: '적자 기업',
+      text: `TTM 순이익이 마이너스인 기업은 ${lossMakers.length}곳입니다. 손실이 큰 순: ${worstLoss3 || '해당 없음'}.`,
       color: '#f85149'
     },
     {
-      title: 'Leaders vs Laggards',
-      text: `Best 12-month returns: ${bestPerformers.map(d => `${d.symbol} (${fmtPct(d.price_change_pct)})`).join(', ')}. Worst: ${worstPerformers.map(d => `${d.symbol} (${fmtPct(d.price_change_pct)})`).join(', ')}.`,
+      title: '수익률 상·하위',
+      text: `가격 변동률이 높은 쪽: ${bestList}. 낮은 쪽: ${worstList}.`,
       color: '#ffa657'
     },
     {
-      title: 'Sector With Largest Market Value',
-      text: `${topSectorByCap.sector} leads with ${fmtB(topSectorByCap.totalCap)} in market cap and ${fmtB(topSectorByCap.totalIncome)} net income.`,
+      title: '시총이 가장 큰 섹터',
+      text: `${sectorLabelKo(topSectorByCap.sector)} 부문이 시총 ${fmtB(topSectorByCap.totalCap)}로 가장 크고, 순이익 합계는 ${fmtB(topSectorByCap.totalIncome)}입니다.`,
       color: '#d2a8ff'
     },
     {
-      title: 'Sector Performance Spread',
-      text: `${bestSectorByReturn.sector} has the strongest average return (${fmtPct(bestSectorByReturn.avgReturn)}), while ${worstSectorByReturn.sector} is weakest (${fmtPct(worstSectorByReturn.avgReturn)}).`,
+      title: '섹터 간 수익률 격차',
+      text: `${sectorLabelKo(bestSectorByReturn.sector)}의 평균 변동률이 가장 높고(${fmtPctSafe(bestSectorByReturn.avgReturn)}), ${sectorLabelKo(worstSectorByReturn.sector)}이 가장 낮습니다(${fmtPctSafe(worstSectorByReturn.avgReturn)}).`,
       color: '#a5d6ff'
     },
     {
-      title: 'Highest Profit Margins',
-      text: `Top margins: ${highMargin.map(d => `${d.symbol} (${d3.format('.1f')(d.profit_margin)}%)`).join(', ')}.`,
+      title: '순이익률 상위',
+      text: `순이익률이 높은 기업: ${highMargin.length ? highMargin.map(d => `${d.symbol} (${d3.format('.1f')(d.profit_margin)}%)`).join(', ') : '데이터 없음'}.`,
       color: '#cea5bf'
     }
   ];
@@ -1051,6 +1343,15 @@ html, body {
     insightsGrid.appendChild(card);
   });
 
+  } catch (err) {
+    console.error(err);
+    const banner = document.createElement('div');
+    banner.setAttribute('role', 'alert');
+    banner.style.cssText = 'padding:1rem 2rem;background:#211b1b;color:#f85149;border-bottom:1px solid #30363d;font-size:0.875rem;font-family:inherit;';
+    const fallback = '차트를 불러오지 못했습니다. 네트워크를 확인하거나 잠시 후 다시 시도해 주세요.';
+    banner.textContent = err instanceof Error && err.message ? err.message : fallback;
+    (document.querySelector('.app-container') || document.body).prepend(banner);
+  }
 })();
 </script>
 </body>
