@@ -31,12 +31,20 @@ node .\scripts\update-data.js
 
 ## GitHub Actions
 
-Repository **Variables**에 다음을 설정하세요.
+워크플로는 **저장소의 `.env`를 읽지 않습니다.** `node ./scripts/update-data.js`에 넘기려면 GitHub에 값을 등록해야 합니다.
 
-- `SEC_CONTACT_EMAIL` — SEC 정책용 공개 연락처(이메일). 민감하면 전용 이메일 사용.
-- `CONSTITUENTS_CSV_URLS` (선택) — 쉼표로 구분된 CSV URL 목록
+**`SEC_CONTACT_EMAIL`** (필수) — 아래 **둘 중 하나**에만 넣으면 됩니다.
 
-Secrets는 Supabase 업로드 단계만 사용합니다 (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, bucket/path 변수).
+- **Repository secret** (권장): Settings → Secrets and variables → **Actions** → **Secrets** → New repository secret → 이름 `SEC_CONTACT_EMAIL`, 값에 이메일.
+- **Repository variable**: 같은 메뉴의 **Variables** 탭 → 이름 `SEC_CONTACT_EMAIL`.
+
+워크플로는 `secrets.SEC_CONTACT_EMAIL`이 있으면 그걸 쓰고, 없으면 `vars.SEC_CONTACT_EMAIL`을 씁니다.
+
+기타 **Variables** (선택):
+
+- `CONSTITUENTS_CSV_URLS` — 쉼표로 구분된 CSV URL 목록
+
+**Secrets** (업로드 등): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` 및 bucket/path용 변수.
 
 ## 출력 형식
 

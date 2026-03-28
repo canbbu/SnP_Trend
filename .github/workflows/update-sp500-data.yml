@@ -19,9 +19,11 @@ jobs:
         with:
           node-version: "20"
 
+      # SEC_CONTACT_EMAIL: 로컬은 .env — Actions에는 Secret 또는 Variable로만 전달됨(.env 미사용).
+      # Secret 이름: SEC_CONTACT_EMAIL (Repository secrets 권장) 또는 Variable 동일 이름.
       - name: Generate latest data.json
         env:
-          SEC_CONTACT_EMAIL: ${{ vars.SEC_CONTACT_EMAIL }}
+          SEC_CONTACT_EMAIL: ${{ secrets.SEC_CONTACT_EMAIL || vars.SEC_CONTACT_EMAIL }}
           CONSTITUENTS_CSV_URLS: ${{ vars.CONSTITUENTS_CSV_URLS }}
           OUT_FILE: ./data.json
           YAHOO_BATCH_SIZE: 40
